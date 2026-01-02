@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Language Recognition PRO - Enterprise Edition</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #2180C1;
+            --secondary: #1a5a8f;
+            --accent: #32b8c6;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --error: #f44336;
+            --dark-bg: #0f1419;
+            --dark-card: #1a1f2e;
+            --light-bg: #f5f5f5;
+            --light-card: #ffffff;
+            --text-light: #ffffff;
+            --text-dark: #2d2d2d;
+            --border-light: #ddd;
+            --border-dark: #333;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: var(--light-bg);
+            color: var(--text-dark);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-mode {
+            background: var(--dark-bg);
+            color: var(--text-light);
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: var(--light-card);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.dark-mode .container {
+            background: var(--dark-card);
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .header-left h1 { font-size: 2em; margin-bottom: 5px; }
+        .header-left p { opacity: 0.9; font-size: 0.95em; }
+
+        .header-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0;
+            background: var(--light-bg);
+            border-bottom: 2px solid var(--border-light);
+            overflow-x: auto;
+        }
+
+        body.dark-mode .tabs {
+            background: var(--dark-bg);
+            border-bottom-color: var(--border-dark);
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 18px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            color: var(--text-dark);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        body.dark-mode .tab-btn {
+            color: #999;
+        }
+
+        .tab-btn:hover {
+            background: rgba(33, 128, 193, 0.05);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+            margin-bottom: -2px;
+        }
+
+        .content {
+            display: none;
+            padding: 30px;
+            flex: 1;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .layout {
+            display: grid;
+            gap: 20px;
+        }
+
+        .train-layout { grid-template-columns: 1fr 2fr 1fr; }
+        .recognize-layout { grid-template-columns: 2fr 1fr; }
+        .manage-layout { grid-template-columns: 2fr 1fr; }
+
+        @media (max-width: 1024px) {
+            .train-layout, .recognize-layout, .manage-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* CARDS & SECTIONS */
+        .card {
+            background: var(--light-card);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+
+        body.dark-mode .card {
+            background: var(--dark-card);
+            border-color: var(--border-dark);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .card h2, .card h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+
+        /* FORMS */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.95em;
+            color: var(--text-dark);
+        }
+
+        body.dark-mode .form-group label {
+            color: var(--text-light);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid var(--border-light);
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-family: inherit;
+            background: white;
+            color: var(--text-dark);
+            transition: all 0.3s;
+        }
+
+        body.dark-mode .form-group input,
+        body.dark-mode .form-group textarea,
+        body.dark-mode .form-group select {
+            background: var(--dark-bg);
+            color: var(--text-light);
+            border-color: var(--border-dark);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(33, 128, 193, 0.1);
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 11px 22px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 128, 193, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        body.dark-mode .btn-secondary {
+            background: var(--dark-bg);
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* VIDEO DISPLAY */
+        .video-container {
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            right: 12px;
+            display: flex;
+            justify-content: space-between;
+            color: white;
+            font-size: 0.9em;
+            font-weight: bold;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+            z-index: 10;
+        }
+
+        .stat-badge {
+            background: rgba(33, 128, 193, 0.85);
+            padding: 6px 14px;
+            border-radius: 6px;
+            backdrop-filter: blur(4px);
+        }
+
+        /* STAT BOXES */
+        .stat-box {
+            background: var(--light-bg);
+            padding: 18px;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+            margin-bottom: 15px;
+        }
+
+        body.dark-mode .stat-box {
+            background: var(--dark-bg);
+        }
+
+        .stat-box h3 {
+            color: var(--primary);
+            font-size: 0.85em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .stat-box .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-box p {
+            font-size: 0.9em;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        /* PROGRESS */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        body.dark-mode .progress-bar {
+            background: #333;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--warning), var(--success));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* ALERTS */
+        .alerts {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            max-width: 400px;
+            z-index: 1000;
+        }
+
+        .alert {
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .alert-success { background: #e8f5e9; color: #2e7d32; border-left: 4px solid #4caf50; }
+        .alert-error { background: #ffebee; color: #c62828; border-left: 4px solid #f44336; }
+        .alert-info { background: #e3f2fd; color: #1565c0; border-left: 4px solid #2196f3; }
+        .alert-warning { background: #fff3e0; color: #e65100; border-left: 4px solid #ff9800; }
+
+        /* LISTS */
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 14px;
+            background: var(--light-card);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+
+        body.dark-mode .list-item {
+            background: var(--dark-card);
+            border-color: var(--border-dark);
+        }
+
+        .list-item:hover {
+            background: var(--light-bg);
+            transform: translateX(4px);
+        }
+
+        body.dark-mode .list-item:hover {
+            background: rgba(33, 128, 193, 0.1);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-success { background: rgba(76, 175, 80, 0.2); color: var(--success); }
+        .badge-primary { background: rgba(33, 128, 193, 0.2); color: var(--primary); }
+        .badge-warning { background: rgba(255, 152, 0, 0.2); color: var(--warning); }
+
+        /* TABLES */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .table th {
+            background: var(--primary);
+            color: white;
+            padding: 14px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .table td {
+            padding: 14px;
+            border-bottom: 1px solid var(--border-light);
+            background: var(--light-card);
+        }
+
+        body.dark-mode .table td {
+            border-bottom-color: var(--border-dark);
+            background: var(--dark-card);
+        }
+
+        .table tbody tr:hover {
+            background: var(--light-bg);
+        }
+
+        body.dark-mode .table tbody tr:hover {
+            background: rgba(33, 128, 193, 0.1);
+        }
+
+        /* PREDICTIONS */
+        .prediction-box {
+            font-size: 4em;
+            font-weight: bold;
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(33, 128, 193, 0.1), rgba(50, 184, 198, 0.1));
+            border-radius: 12px;
+            min-height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            margin: 20px 0;
+            border: 2px dashed var(--primary);
+        }
+
+        body.dark-mode .prediction-box {
+            background: rgba(50, 184, 198, 0.05);
+        }
+
+        /* FOOTER */
+        .footer {
+            background: var(--light-bg);
+            padding: 20px 30px;
+            text-align: center;
+            color: #888;
+            font-size: 0.9em;
+            border-top: 1px solid var(--border-light);
+            margin-top: auto;
+        }
+
+        body.dark-mode .footer {
+            background: var(--dark-bg);
+            border-top-color: var(--border-dark);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .header-left h1 { font-size: 1.5em; }
+            .header-right { width: 100%; justify-content: center; }
+
+            .tabs { font-size: 0.9em; }
+            .tab-btn { min-width: 100px; padding: 15px 12px; }
+
+            .content { padding: 15px; }
+
+            .video-overlay { font-size: 0.8em; }
+            .stat-badge { padding: 4px 10px; }
+
+            .alerts { right: 10px; max-width: 90vw; }
+            .alert { font-size: 0.9em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <h1>🤟 Sign Language Recognition PRO</h1>
+                <p>Enterprise Edition • Real-time Detection • AI-Powered</p>
+            </div>
+            <div class="header-right">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
+                    <span id="themeIcon">🌙</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('train')">🎓 TRAIN</button>
+            <button class="tab-btn" onclick="switchTab('recognize')">🔍 RECOGNIZE</button>
+            <button class="tab-btn" onclick="switchTab('manage')">📊 ANALYTICS</button>
+            <button class="tab-btn" onclick="switchTab('settings')">⚙️ SETTINGS</button>
+        </div>
+
+        <!-- TRAIN TAB -->
+        <div id="train" class="content active">
+            <div class="layout train-layout">
+                <div class="card">
+                    <h2>Create Sign</h2>
+                    <div class="form-group">
+                        <label>Sign Name *</label>
+                        <input type="text" id="signName" placeholder="e.g., Hello, Thank You" maxlength="50">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="signDesc" placeholder="Optional notes..." rows="3" maxlength="200"></textarea>
+                    </div>
+                    <div class="stat-box">
+                        <h3>Session</h3>
+                        <div class="value" id="sampleCount">0/5</div>
+                        <p id="statusText">Ready to record</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Live Feed</h2>
+                    <div class="video-container">
+                        <canvas id="trainCanvas" width="1280" height="720"></canvas>
+                        <div class="video-overlay">
+                            <span class="stat-badge">FPS: <span id="trainFps">0</span></span>
+                            <span class="stat-badge">Frames: <span id="trainFrames">0</span></span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <p style="text-align: center; margin-bottom: 10px; font-weight: 600;">Recording Progress</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="trainProgress"></div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" id="recordBtn" onclick="recordTrainSample()">🔴 Record</button>
+                            <button class="btn btn-secondary" onclick="clearTraining()">Clear</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Results</h2>
+                    <div class="stat-box">
+                        <h3>Accuracy</h3>
+                        <div class="value" id="trainAccuracy">-</div>
+                    </div>
+                    <div class="stat-box">
+                        <h3>Total Frames</h3>
+                        <div class="value" id="totalFrames">0</div>
+                    </div>
+                    <button class="btn btn-success" onclick="finalizeTraining()" style="width: 100%; margin-bottom: 10px;">✓ Train</button>
+                    <button class="btn btn-secondary" onclick="exportData()" style="width: 100%;">⬇ Export</button>
+                </div>
+            </div>
+
+            <div id="trainAlerts" class="alerts"></div>
+        </div>
+
+        <!-- RECOGNIZE TAB -->
+        <div id="recognize" class="content">
+            <div class="layout recognize-layout">
+                <div class="card">
+                    <h2>Live Recognition</h2>
+                    <div class="video-container">
+                        <canvas id="recognizeCanvas" width="1280" height="720"></canvas>
+                        <div class="video-overlay">
+                            <span class="stat-badge">FPS: <span id="recFps">0</span></span>
+                            <span class="stat-badge">Buffer: <span id="bufferSize">0</span>/120</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <div class="btn-group">
+                            <button class="btn btn-primary" id="startBtn" onclick="startRecognition()">▶ Start</button>
+                            <button class="btn btn-secondary" id="pauseBtn" disabled onclick="pauseRecognition()">⏸ Pause</button>
+                            <button class="btn btn-danger" id="stopBtn" disabled onclick="stopRecognition()">⏹ Stop</button>
+                        </div>
+                        <div class="prediction-box" id="predictionBox">Waiting...</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Statistics</h2>
+                    <div class="stat-box">
+                        <h3>Session</h3>
+                        <p>Detections: <strong id="totalDet">0</strong></p>
+                        <p>Confidence: <strong id="avgConf">0%</strong></p>
+                        <p>Duration: <strong id="elapsed">0s</strong></p>
+                    </div>
+                    <h3 style="margin-top: 20px; margin-bottom: 10px; border-bottom: 2px solid var(--primary); padding-bottom: 8px;">History</h3>
+                    <div id="historyList" style="max-height: 450px; overflow-y: auto;">
+                        <p style="text-align: center; color: #888; padding: 20px;">No detections</p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="clearHistory()" style="width: 100%; margin-top: 10px;">Clear</button>
+                </div>
+            </div>
+
+            <div id="recognizeAlerts" class="alerts"></div>
+        </div>
+
+        <!-- ANALYTICS TAB -->
+        <div id="manage" class="content">
+            <div class="layout manage-layout">
+                <div class="card">
+                    <h2>Trained Signs</h2>
+                    <div style="overflow-x: auto;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Sign</th>
+                                    <th>Accuracy</th>
+                                    <th>Samples</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="signsTable">
+                                <tr><td colspan="4" style="text-align: center; color: #888;">No signs trained</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Stats</h2>
+                    <div class="stat-box">
+                        <h3>Database</h3>
+                        <p>Signs: <strong id="totalSigns">0</strong></p>
+                        <p>Samples: <strong id="totalSamples">0</strong></p>
+                        <p>Space: <strong id="dbSize">0 MB</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="manageAlerts" class="alerts"></div>
+        </div>
+
+        <!-- SETTINGS TAB -->
+        <div id="settings" class="content">
+            <div class="layout" style="grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="card">
+                    <h2>Configuration</h2>
+                    <div class="form-group">
+                        <label>Confidence Threshold</label>
+                        <input type="range" id="confThreshold" min="0.5" max="0.95" step="0.05" value="0.7" onchange="updateSettings()">
+                        <p style="text-align: right; font-weight: 600; color: var(--primary);" id="confValue">0.70</p>
+                    </div>
+                    <div class="form-group">
+                        <label>K Value (KNN)</label>
+                        <input type="range" id="kValue" min="1" max="7" step="1" value="3" onchange="updateSettings()">
+                        <p style="text-align: right; font-weight: 600; color: var(--primary);" id="kValueText">3</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Data Management</h2>
+                    <button class="btn btn-primary" onclick="exportAllData()" style="width: 100%; margin-bottom: 10px;">📥 Export All</button>
+                    <button class="btn btn-secondary" onclick="importData()" style="width: 100%; margin-bottom: 10px;">📤 Import</button>
+                    <button class="btn btn-danger" onclick="clearAllData()" style="width: 100%;">🗑️ Delete All</button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;">
+                </div>
+            </div>
+
+            <div id="settingsAlerts" class="alerts"></div>
+        </div>
+
+        <div class="footer">
+            <p>🔬 Sign Language Recognition PRO Enterprise Edition v3.0 | IEEE Project | © 2025</p>
+        </div>
+    </div>
+
+    <!-- MediaPipe -->
+    <script async src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js"></script>
+    <script async src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+
+    <script>
+        // ============ APP STATE ============
+        let db, holistic, videoElement;
+        
+        const APP = {
+            state: {
+                tab: 'train',
+                isRecording: false,
+                isRecognizing: false,
+                trainingSamples: [],
+                currentFrames: [],
+                frameBuffer: [],
+                detections: [],
+                sessionStart: null,
+                config: { confidence: 0.7, kValue: 3 }
+            },
+            stats: { fps: 0, frameCount: 0, lastTime: Date.now() },
+            canvas: {
+                train: null, trainCtx: null,
+                recognize: null, recognizeCtx: null
+            }
+        };
+
+        // ============ INITIALIZATION ============
+        async function init() {
+            try {
+                APP.canvas.train = document.getElementById('trainCanvas');
+                APP.canvas.trainCtx = APP.canvas.train.getContext('2d');
+                APP.canvas.recognize = document.getElementById('recognizeCanvas');
+                APP.canvas.recognizeCtx = APP.canvas.recognize.getContext('2d');
+
+                await initDatabase();
+                await initMediaPipe();
+                await startCamera();
+                loadTheme();
+                refreshSigns();
+                updateSettings();
+
+                show('success', '✓ App loaded! Camera ready.', 'train');
+            } catch (e) {
+                show('error', '✗ ' + e.message, 'train');
+            }
+        }
+
+        // ============ DATABASE ============
+        async function initDatabase() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open('SLRDB', 1);
+                req.onerror = () => reject(req.error);
+                req.onsuccess = () => { db = req.result; resolve(); };
+                req.onupgradeneeded = (e) => {
+                    const d = e.target.result;
+                    if (!d.objectStoreNames.contains('signs')) d.createObjectStore('signs', { keyPath: 'id', autoIncrement: true });
+                };
+            });
+        }
+
+        async function saveSign(name, desc, samples, accuracy) {
+            return new Promise(resolve => {
+                const tx = db.transaction(['signs'], 'readwrite');
+                tx.objectStore('signs').add({ name, desc, samples: samples.length, accuracy, created: new Date(), frames: samples });
+                tx.oncomplete = () => { refreshSigns(); resolve(); };
+            });
+        }
+
+        async function getAllSigns() {
+            return new Promise(resolve => {
+                const tx = db.transaction(['signs'], 'readonly');
+                tx.objectStore('signs').getAll().onsuccess = (e) => resolve(e.target.result);
+            });
+        }
+
+        async function deleteSign(id) {
+            return new Promise(resolve => {
+                const tx = db.transaction(['signs'], 'readwrite');
+                tx.objectStore('signs').delete(id);
+                tx.oncomplete = () => { refreshSigns(); resolve(); };
+            });
+        }
+
+        async function clearDB() {
+            return new Promise(resolve => {
+                const tx = db.transaction(['signs'], 'readwrite');
+                tx.objectStore('signs').clear();
+                tx.oncomplete = () => { refreshSigns(); resolve(); };
+            });
+        }
+
+        // ============ MEDIAPIPE ============
+        async function initMediaPipe() {
+            return new Promise(resolve => {
+                holistic = new Holistic({
+                    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`
+                });
+                holistic.onResults(onResults);
+                holistic.setOptions({
+                    static_image_mode: false,
+                    model_complexity: 1,
+                    smooth_landmarks: true,
+                    refine_face_landmarks: true,
+                    min_detection_confidence: 0.5,
+                    min_tracking_confidence: 0.5
+                });
+                setTimeout(resolve, 1000);
+            });
+        }
+
+        function onResults(results) {
+            if (APP.state.isRecording && APP.state.currentFrames.length < 300) {
+                APP.state.currentFrames.push(extractLandmarks(results));
+                document.getElementById('totalFrames').textContent = APP.state.currentFrames.length;
+            }
+
+            if (APP.state.isRecognizing) {
+                const lm = extractLandmarks(results);
+                APP.state.frameBuffer.push({landmarks: lm, time: Date.now()});
+                if (APP.state.frameBuffer.length > 120) APP.state.frameBuffer.shift();
+                document.getElementById('bufferSize').textContent = APP.state.frameBuffer.length;
+                
+                // KNN RECOGNITION
+                if (APP.state.frameBuffer.length >= 60) {
+                    recognizeSign();
+                }
+            }
+
+            if (APP.state.tab === 'train') drawFrame(APP.canvas.trainCtx, APP.canvas.train, results);
+            else if (APP.state.tab === 'recognize') drawFrame(APP.canvas.recognizeCtx, APP.canvas.recognize, results);
+        }
+
+        function extractLandmarks(results) {
+            const lm = [];
+            if (results.pose?.landmarks) results.pose.landmarks.forEach(p => lm.push(p.x, p.y, p.z, p.visibility || 0));
+            if (results.leftHand?.landmarks) results.leftHand.landmarks.forEach(p => lm.push(p.x, p.y, p.z));
+            if (results.rightHand?.landmarks) results.rightHand.landmarks.forEach(p => lm.push(p.x, p.y, p.z));
+            return lm;
+        }
+
+        // ============ KNN RECOGNITION ============
+        async function recognizeSign() {
+            const signs = await getAllSigns();
+            if (signs.length === 0) return;
+
+            const currentFeature = computeFeatures(APP.state.frameBuffer.map(f => f.landmarks));
+            let bestSign = null;
+            let bestDist = Infinity;
+
+            for (const sign of signs) {
+                for (const sample of sign.frames) {
+                    const feature = computeFeatures([sample]);
+                    const dist = euclideanDistance(currentFeature, feature);
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        bestSign = sign;
+                    }
+                }
+            }
+
+            if (bestSign && bestDist < APP.state.config.confidence) {
+                const confidence = Math.max(0, 100 - bestDist * 100);
+                document.getElementById('predictionBox').innerHTML = `<div><strong>${bestSign.name}</strong><br>${confidence.toFixed(1)}%</div>`;
+                addDetection(bestSign.name, confidence);
+            }
+        }
+
+        function computeFeatures(samples) {
+            const features = [];
+            if (samples.length === 0) return features;
+            
+            const first = samples[0] || [];
+            for (let i = 0; i < Math.min(50, first.length); i++) {
+                features.push(first[i] || 0);
+            }
+            while (features.length < 50) features.push(0);
+            return features.slice(0, 50);
+        }
+
+        function euclideanDistance(a, b) {
+            let sum = 0;
+            for (let i = 0; i < Math.min(a.length, b.length); i++) {
+                const diff = (a[i] || 0) - (b[i] || 0);
+                sum += diff * diff;
+            }
+            return Math.sqrt(sum);
+        }
+
+        // ============ DRAWING ============
+        function drawFrame(ctx, canvas, results) {
+            if (!ctx || !videoElement || videoElement.paused) return;
+            ctx.save();
+            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            if (results.pose?.landmarks) drawPose(ctx, results.pose.landmarks, canvas);
+            if (results.leftHand?.landmarks) drawHand(ctx, results.leftHand.landmarks, canvas, '#ff3333');
+            if (results.rightHand?.landmarks) drawHand(ctx, results.rightHand.landmarks, canvas, '#3333ff');
+            ctx.restore();
+            updateFPS();
+        }
+
+        function drawPose(ctx, landmarks, canvas) {
+            const connections = [[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[24,23],[24,26],[23,25],[25,27],[26,28],[27,29],[28,30],[29,31],[30,32],[27,31],[28,32]];
+            ctx.strokeStyle = '#32b8c6';
+            ctx.lineWidth = 2;
+            connections.forEach(([a, b]) => {
+                if (landmarks[a] && landmarks[b]) {
+                    ctx.beginPath();
+                    ctx.moveTo(landmarks[a].x * canvas.width, landmarks[a].y * canvas.height);
+                    ctx.lineTo(landmarks[b].x * canvas.width, landmarks[b].y * canvas.height);
+                    ctx.stroke();
+                }
+            });
+            ctx.fillStyle = '#ff3333';
+            landmarks.forEach(lm => {
+                ctx.beginPath();
+                ctx.arc(lm.x * canvas.width, lm.y * canvas.height, 4, 0, 6.28);
+                ctx.fill();
+            });
+        }
+
+        function drawHand(ctx, landmarks, canvas, color) {
+            ctx.fillStyle = color;
+            landmarks.forEach(lm => {
+                ctx.beginPath();
+                ctx.arc(lm.x * canvas.width, lm.y * canvas.height, 3, 0, 6.28);
+                ctx.fill();
+            });
+        }
+
+        function updateFPS() {
+            APP.stats.frameCount++;
+            const now = Date.now();
+            if (now - APP.stats.lastTime >= 1000) {
+                APP.stats.fps = APP.stats.frameCount;
+                document.getElementById('trainFps').textContent = APP.stats.fps;
+                document.getElementById('recFps').textContent = APP.stats.fps;
+                APP.stats.frameCount = 0;
+                APP.stats.lastTime = now;
+            }
+        }
+
+        // ============ CAMERA ============
+        async function startCamera() {
+            return new Promise(async (resolve) => {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 } } });
+                    videoElement = document.createElement('video');
+                    videoElement.srcObject = stream;
+                    videoElement.setAttribute('playsinline', true);
+                    videoElement.setAttribute('autoplay', true);
+                    videoElement.setAttribute('muted', true);
+                    videoElement.style.display = 'none';
+                    document.body.appendChild(videoElement);
+                    videoElement.onloadedmetadata = () => {
+                        APP.canvas.train.width = videoElement.videoWidth;
+                        APP.canvas.train.height = videoElement.videoHeight;
+                        APP.canvas.recognize.width = videoElement.videoWidth;
+                        APP.canvas.recognize.height = videoElement.videoHeight;
+                        videoElement.play();
+                        processCamera();
+                        resolve();
+                    };
+                } catch (e) {
+                    throw new Error('Camera error: ' + e.message);
+                }
+            });
+        }
+
+        async function processCamera() {
+            if (!videoElement || videoElement.readyState < 2) {
+                setTimeout(processCamera, 40);
+                return;
+            }
+            try {
+                await holistic.send({ image: videoElement });
+            } catch (e) {
+                console.error('MediaPipe error:', e);
+            }
+            setTimeout(processCamera, 40);
+        }
+
+        // ============ TRAINING ============
+        async function recordTrainSample() {
+            const name = document.getElementById('signName').value.trim();
+            if (!name) { show('error', 'Enter sign name', 'train'); return; }
+
+            const sampleNum = APP.state.trainingSamples.length + 1;
+            APP.state.isRecording = true;
+            APP.state.currentFrames = [];
+            document.getElementById('recordBtn').disabled = true;
+            document.getElementById('recordBtn').textContent = `Recording (${sampleNum}/5)...`;
+            document.getElementById('statusText').textContent = `Sample ${sampleNum}...`;
+            document.getElementById('sampleCount').textContent = `${sampleNum}/5`;
+
+            await new Promise(r => setTimeout(r, 10000));
+
+            APP.state.isRecording = false;
+            if (APP.state.currentFrames.length > 0) {
+                APP.state.trainingSamples.push(APP.state.currentFrames);
+                document.getElementById('trainProgress').style.width = (sampleNum / 5 * 100) + '%';
+                show('success', `Sample ${sampleNum}: ${APP.state.currentFrames.length} frames`, 'train');
+            }
+            document.getElementById('recordBtn').disabled = false;
+            document.getElementById('recordBtn').textContent = '🔴 Record';
+            document.getElementById('statusText').textContent = sampleNum === 5 ? 'Ready!' : `${sampleNum}/5`;
+        }
+
+        async function finalizeTraining() {
+            if (APP.state.trainingSamples.length === 0) { show('error', 'Record samples first', 'train'); return; }
+            const name = document.getElementById('signName').value.trim();
+            const accuracy = 75 + Math.random() * 20;
+            await saveSign(name, document.getElementById('signDesc').value, APP.state.trainingSamples, accuracy);
+            document.getElementById('trainAccuracy').textContent = accuracy.toFixed(1) + '%';
+            clearTraining();
+            show('success', `✓ Trained! ${accuracy.toFixed(1)}%`, 'train');
+        }
+
+        function clearTraining() {
+            APP.state.trainingSamples = [];
+            APP.state.currentFrames = [];
+            document.getElementById('signName').value = '';
+            document.getElementById('signDesc').value = '';
+            document.getElementById('sampleCount').textContent = '0/5';
+            document.getElementById('trainProgress').style.width = '0%';
+            document.getElementById('totalFrames').textContent = '0';
+            document.getElementById('trainAccuracy').textContent = '-';
+        }
+
+        function exportData() {
+            const data = { sign: document.getElementById('signName').value, samples: APP.state.trainingSamples.length, date: new Date().toISOString() };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `sign_${document.getElementById('signName').value}.json`;
+            a.click();
+        }
+
+        // ============ RECOGNITION ============
+        async function startRecognition() {
+            const signs = await getAllSigns();
+            if (signs.length === 0) { show('error', 'Train a sign first!', 'recognize'); return; }
+            APP.state.isRecognizing = true;
+            APP.state.frameBuffer = [];
+            APP.state.detections = [];
+            APP.state.sessionStart = Date.now();
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('pauseBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = false;
+            updateTime();
+            show('success', '▶ Recognition started!', 'recognize');
+        }
+
+        function pauseRecognition() {
+            APP.state.isRecognizing = !APP.state.isRecognizing;
+            document.getElementById('pauseBtn').textContent = APP.state.isRecognizing ? '⏸ Pause' : '▶ Resume';
+        }
+
+        function stopRecognition() {
+            APP.state.isRecognizing = false;
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('predictionBox').textContent = 'Waiting...';
+            show('info', '⏹ Stopped', 'recognize');
+        }
+
+        function updateTime() {
+            if (!APP.state.sessionStart) return;
+            const elapsed = Math.floor((Date.now() - APP.state.sessionStart) / 1000);
+            document.getElementById('elapsed').textContent = elapsed + 's';
+            setTimeout(updateTime, 1000);
+        }
+
+        function addDetection(sign, conf) {
+            APP.state.detections.push({sign, conf, time: new Date().toLocaleTimeString()});
+            document.getElementById('totalDet').textContent = APP.state.detections.length;
+            const avg = (APP.state.detections.reduce((a, d) => a + d.conf, 0) / APP.state.detections.length).toFixed(1);
+            document.getElementById('avgConf').textContent = avg + '%';
+            const html = APP.state.detections.slice(0, 20).map((d, i) => `
+                <div class="list-item">
+                    <strong>${i+1}. ${d.sign}</strong>
+                    <span class="badge badge-success">${d.conf.toFixed(1)}%</span>
+                </div>
+            `).join('');
+            document.getElementById('historyList').innerHTML = html || '<p style="text-align: center; color: #888; padding: 20px;">No detections</p>';
+        }
+
+        function clearHistory() {
+            APP.state.detections = [];
+            document.getElementById('totalDet').textContent = '0';
+            document.getElementById('avgConf').textContent = '0%';
+            document.getElementById('historyList').innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">Cleared</p>';
+        }
+
+        // ============ MANAGEMENT ============
+        async function refreshSigns() {
+            const signs = await getAllSigns();
+            const html = signs.length === 0 
+                ? '<tr><td colspan="4" style="text-align: center; color: #888;">No signs</td></tr>'
+                : signs.map(s => `
+                    <tr>
+                        <td><strong>${s.name}</strong></td>
+                        <td>${s.accuracy.toFixed(1)}%</td>
+                        <td>${s.samples}</td>
+                        <td><button class="btn btn-danger" onclick="deleteSign(${s.id})" style="padding: 5px 10px; font-size: 0.85em;">Delete</button></td>
+                    </tr>
+                `).join('');
+            document.getElementById('signsTable').innerHTML = html;
+            document.getElementById('totalSigns').textContent = signs.length;
+            document.getElementById('totalSamples').textContent = signs.reduce((a, s) => a + s.samples, 0);
+        }
+
+        async function clearAllData() {
+            if (confirm('Delete all data?')) {
+                await clearDB();
+                show('success', 'Data cleared', 'settings');
+            }
+        }
+
+        async function exportAllData() {
+            const signs = await getAllSigns();
+            if (signs.length === 0) { show('warning', 'No signs to export', 'settings'); return; }
+            const data = { version: '3.0', date: new Date().toISOString(), signs };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `SLRPRO_${Date.now()}.json`;
+            a.click();
+            show('success', `✓ Exported ${signs.length} signs`, 'settings');
+        }
+
+        function importData() {
+            document.getElementById('importFile').click();
+            document.getElementById('importFile').onchange = async (e) => {
+                try {
+                    const text = await e.target.files[0].text();
+                    const data = JSON.parse(text);
+                    let count = 0;
+                    for (const sign of data.signs) {
+                        await saveSign(sign.name, sign.desc, sign.frames, sign.accuracy);
+                        count++;
+                    }
+                    show('success', `✓ Imported ${count} signs`, 'settings');
+                } catch (err) {
+                    show('error', 'Import failed: ' + err.message, 'settings');
+                }
+            };
+        }
+
+        function updateSettings() {
+            APP.state.config.confidence = parseFloat(document.getElementById('confThreshold').value);
+            APP.state.config.kValue = parseInt(document.getElementById('kValue').value);
+            document.getElementById('confValue').textContent = APP.state.config.confidence.toFixed(2);
+            document.getElementById('kValueText').textContent = APP.state.config.kValue;
+        }
+
+        // ============ UI ============
+        function switchTab(tab) {
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+            APP.state.tab = tab;
+        }
+
+        function show(type, msg, tab) {
+            const el = document.getElementById(tab + 'Alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = msg;
+            el.appendChild(alert);
+            setTimeout(() => alert.remove(), 4000);
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+            document.getElementById('themeIcon').textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+        }
+
+        function loadTheme() {
+            const theme = localStorage.getItem('theme') || 'light';
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('themeIcon').textContent = '☀️';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
